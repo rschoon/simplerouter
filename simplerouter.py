@@ -4,7 +4,7 @@ import imp
 import re
 from webob import exc, Response
 
-__all__ = ['Router']
+__all__ = ['Router', 'lookup_view']
 
 def internal_error_view(msg):
     return lambda req: exc.HTTPInternalServerError(msg)
