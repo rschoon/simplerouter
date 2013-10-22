@@ -78,9 +78,10 @@ class Route(object):
                 return view(request)
 
 class Router(object):
-    def __init__(self, default=NotFoundView):
+    def __init__(self, default=NotFoundView, try_slashes=False):
         self.routes = []
         self.default = default
+        self.try_slashes = try_slashes
 
     def add_route(self, *args, **kwargs):
         route = Route(*args, **kwargs)
@@ -102,14 +103,15 @@ class Router(object):
                 matches.add(view)
         
         # try redirect to alternate path
-        if req.environ['PATH_INFO'].endswith("/"):
-            req.environ['PATH_INFO'] = req.environ['PATH_INFO'][:-1]
-        else:
-            req.environ['PATH_INFO'] += "/"
-        
-        altView = self.match(req, True)
-        if altView is not None and altView not in matches:
-            return exc.HTTPTemporaryRedirect(location=req.url)
+        if self.try_slashes:
+            if req.environ['PATH_INFO'].endswith("/"):
+                req.environ['PATH_INFO'] = req.environ['PATH_INFO'][:-1]
+            else:
+                req.environ['PATH_INFO'] += "/"
+            
+            altView = self.match(req, True)
+            if altView is not None and altView not in matches:
+                return exc.HTTPTemporaryRedirect(location=req.url)
                 
         return self.default(req)
         
