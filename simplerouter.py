@@ -5,6 +5,9 @@ from webob import exc, Response
 
 __all__ = ['Router', 'lookup_view']
 
+def blank_view(request):
+    return Response()
+
 def internal_error_view(msg):
     return lambda req: exc.HTTPInternalServerError(msg)
 NotFoundView = lambda req: exc.HTTPNotFound()
@@ -51,7 +54,6 @@ class Route(object):
             elif hasattr(self.view, "__class__"):
                 self.viewname = self.view.__class__.__name__
         else:
-            self.view = None
             self.viewname = viewname
 
         self.vars = vars
