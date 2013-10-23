@@ -46,6 +46,10 @@ class Route(object):
             self.path_re = re.compile("")
 
         self.viewname = viewname
+        if callable(self.viewname):
+            self.view = self.viewname
+            self.viewname = self.view.__name__
+
         self.vars = vars
         self.wsgi = wsgi
         self.no_alt_redir = no_alt_redir
