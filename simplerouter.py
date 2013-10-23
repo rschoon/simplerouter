@@ -44,10 +44,15 @@ class Route(object):
         else:
             self.path_re = re.compile("")
 
-        self.viewname = viewname
-        if callable(self.viewname):
-            self.view = self.viewname
-            self.viewname = self.view.__name__
+        if callable(viewname):
+            self.view = viewname
+            if hasattr(self.view, "__name__"):
+                self.viewname = self.view.__name__
+            elif hasattr(self.view, "__class__"):
+                self.viewname = self.view.__class__.__name__
+        else:
+            self.view = None
+            self.viewname = viewname
 
         self.vars = vars
         self.wsgi = wsgi
