@@ -1,6 +1,5 @@
 
-import sys, os
-import imp
+import sys
 import re
 from webob import exc, Response
 
