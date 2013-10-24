@@ -47,6 +47,27 @@ def test_default_default():
     eq_(r(Request.blank('/')).status_code, 404)
     eq_(r(Request.blank('/path')).status_code, 404)
 
+def test_wsgi():
+    from simplerouter import Router
+
+    def call_app(app, path):
+        return Request.blank(path).call_application(app)
+
+    r = Router(default=None)
+    r.add_route('/', lambda req: Response("root"))
+    r.add_route('/path', lambda req: Response("path"))
+
+    statusRoot, headersRoot, bodyRoot = call_app(r.as_wsgi, '/')
+    assert statusRoot.startswith('200')
+    eq_(b''.join(bodyRoot), b'root')
+
+    statusRoot, headersRoot, bodyRoot = call_app(r.as_wsgi, '/path')
+    assert statusRoot.startswith('200')
+    eq_(b''.join(bodyRoot), b'path')
+
+    statusInvalid, headersInvalid, bodyInvalid = call_app(r.as_wsgi, '/invalid')
+    assert statusInvalid.startswith('500')
+
 #
 # Regexes
 #

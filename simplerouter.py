@@ -4,7 +4,7 @@ __all__ = ['Router', 'lookup_view']
 
 import sys
 import re
-from webob import exc, Response
+from webob import exc, Request, Response
 
 def blank_view(request):
     return Response()
@@ -123,8 +123,9 @@ class Router(object):
             altView = self.match(req, True)
             if altView is not None and altView not in matches:
                 return exc.HTTPTemporaryRedirect(location=req.url)
-                
-        return self.default(req)
+        
+        if self.default is not None: 
+            return self.default(req)
         
     def match(self, req, alt=False):
         for m in self.matches(req, alt):
@@ -138,3 +139,12 @@ class Router(object):
                     yield m
                 else:
                     yield route
+
+    def as_wsgi(self, environ, start_response):
+        req = Request(environ)
+        resp = self(req)
+        if resp is None:
+            start_response('500 Internal Server Error', [('Content-Type', 'text/plain')])
+            return [b'no default in wsgi call']
+        return resp(environ, start_response)
+
