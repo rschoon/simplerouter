@@ -1,9 +1,10 @@
 
+__version__ = '1.0'
+__all__ = ['Router', 'lookup_view']
+
 import sys
 import re
 from webob import exc, Response
-
-__all__ = ['Router', 'lookup_view']
 
 def blank_view(request):
     return Response()
