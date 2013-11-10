@@ -2,7 +2,7 @@
 simplerouter
 ============
 
-simplerouter is an expansion of DIY framework described in the
+simplerouter is an expansion of the DIY framework described in the
 WebOB documentation.
 
 Quick Example
@@ -42,17 +42,17 @@ views.py:
 Adding Routes
 -------------
 
-The ``Router`` object maps paths to views.  Routes are added view
+The ``Router`` object maps paths to views.  Routes are added via
 the ``Router.add_route()`` method, which takes a path and a view.
 
 .. code-block:: python
 
     router.add_route('/path', viewfunc)
 
-A route path is matched against a ``Request``'s ``path_info``
-variable, which is the portion of the url after the application
-``script_name``.  Route paths may contain variables, which are
-indicated by curly braces:
+Later on, when matching occurs, the route path is matched against
+a ``Request``'s ``path_info`` variable, which is the portion of
+the url after the application ``script_name``.  Route paths may
+contain variables, which are indicated by curly braces:
 
 .. code-block:: python
 
@@ -89,7 +89,7 @@ Using a Router
 --------------
 
 Under typical circumstances, you may want to construct the ``Request``
-vobject from the WSGI environ yourself, and then call the ``Router``
+object from the WSGI environ yourself, and then call the ``Router``
 as a callable with the request:
 
 .. code-block:: python
@@ -135,8 +135,9 @@ Trailing Slashes
 If try_slashes is passed to the ``Router`` initializer, then the ``Router`` 
 object will attempt to determine if a failed request would have instead
 succeeded if the trailing slash on the url had instead been omitted or
-provided.  If it is determined that this is the case, then a temporary
-rederict response will be returned.
+provided.  If an alternate matching route is found, then a HTTP temporary
+redirect response will be returned that will tell the user's browser to
+use the correct URL.
 
 .. code-block:: python
 
@@ -161,7 +162,7 @@ View Priority
 .............
 
 Routes are checked in the order that they are added.  While this behavior
-is not likely to change, it might be desirable set the priority of
+is not likely to change, it still might be desirable set the priority of
 a route without altering the order that they are originally added, which
 can be done by supplying the ``Router.add_route`` method with the
 priority keyword:
