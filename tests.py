@@ -177,3 +177,9 @@ def test_named():
     r = Router()
     r.add_route('/blank', 'simplerouter:blank_view')
     eq_(r(Request.blank('/blank')).body, b'')
+
+def test_default_named():
+    from simplerouter import Router
+
+    r = Router(default='simplerouter:blank_view')
+    eq_(r(Request.blank('/')).body, b'')

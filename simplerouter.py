@@ -16,7 +16,9 @@ def blank_view(request):
 
 def internal_error_view(msg):
     return lambda req: exc.HTTPInternalServerError(msg)
-NotFoundView = lambda req: exc.HTTPNotFound()
+
+def not_found_view(request):
+    return exc.HTTPNotFound()
 
 VAR_REGEX = re.compile(r'{(\w+)(?::([^}]+))?\}')
 def template_to_regex(template):
@@ -94,9 +96,12 @@ class Route(object):
                 return view(request)
 
 class Router(object):
-    def __init__(self, default=NotFoundView, try_slashes=False):
+    def __init__(self, default=not_found_view, try_slashes=False):
         self.routes = []
-        self.default = default
+        if default is not None:
+            self.default = Route(None, default)
+        else:
+            self.default = None
         self.try_slashes = try_slashes
 
     def add_route(self, *args, **kwargs):
