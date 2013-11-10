@@ -1,3 +1,11 @@
+"""
+simplerouter is an expansion of DIY framework described in the
+WebOB documentation.
+    
+"""
+
+__version__ = '1.0'
+__all__ = ['Router', 'lookup_view']
 
 __version__ = '1.0'
 __all__ = ['Router', 'lookup_view']
@@ -95,6 +103,7 @@ class Router(object):
         self.try_slashes = try_slashes
 
     def add_route(self, *args, **kwargs):
+        """Add a route to the router."""
         route = Route(*args, **kwargs)
         for i, rti in enumerate(self.routes):
             if rti.priority < route.priority:
@@ -104,6 +113,7 @@ class Router(object):
         self.routes.append(route)
         
     def __call__(self, req):
+        """Invoke router as a view."""
         # try normal view
         matches = set()
         for view in self.matches(req):
@@ -128,10 +138,12 @@ class Router(object):
             return self.default(req)
         
     def match(self, req, alt=False):
+        """Return the first view that the given request matches."""
         for m in self.matches(req, alt):
             return m 
 
     def matches(self, req, alt=False):
+        """Iterate through all views that the given request matches."""
         for route in self.routes:
             m = route.match(req, alt=alt)
             if m:
@@ -141,6 +153,7 @@ class Router(object):
                     yield route
 
     def as_wsgi(self, environ, start_response):
+        """Invoke router as an wsgi application."""
         req = Request(environ)
         resp = self(req)
         if resp is None:
