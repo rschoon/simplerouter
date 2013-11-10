@@ -7,9 +7,6 @@ WebOB documentation.
 __version__ = '1.0'
 __all__ = ['Router', 'lookup_view']
 
-__version__ = '1.0'
-__all__ = ['Router', 'lookup_view']
-
 import sys
 import re
 from webob import exc, Request, Response
