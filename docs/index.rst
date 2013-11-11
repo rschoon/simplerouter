@@ -12,7 +12,7 @@ app.py:
 
 .. code-block:: python
 
-    from simperouter import Router
+    from simplerouter import Router
 
     router = Router()
     router.add_route('/post/{name}', 'views:post_view')
@@ -22,7 +22,7 @@ app.py:
 
     if __name__=='__main__':
         from wsgiref.simple_server import make_server
-        make_server('', 8000, application).server_forever()
+        make_server('', 8000, application).serve_forever()
 
 views.py:
 
@@ -42,17 +42,19 @@ views.py:
 Adding Routes
 -------------
 
-The ``Router`` object maps paths to views.  Routes are added via
-the ``Router.add_route()`` method, which takes a path and a view.
+The ``Router`` object is composed of mappings of paths to views
+called routes, and are added using the ``Router.add_route()``
+method.  The route path is matched against the ``Request``'s 
+``path_info`` [#pathinfo]_ variable, and the view is either a callable, or
+a string indicating the location of a callable in
+``module_name:callable_name`` format.   
 
 .. code-block:: python
 
     router.add_route('/path', viewfunc)
+    router.add_route('/path', 'module.views:named_view')
 
-Later on, when matching occurs, the route path is matched against
-a ``Request``'s ``path_info`` variable, which is the portion of
-the url after the application ``script_name``.  Route paths may
-contain variables, which are indicated by curly braces:
+Route paths may contain variables, which are indicated by curly braces:
 
 .. code-block:: python
 
@@ -85,14 +87,15 @@ path doesn't contain them:
 
     route.add_route('/list', viewfunc, vars={'page' : 1})
 
-Views may be given as a callable, or as a ``module:funcname``
-name, in which case a dotted notation ``module`` would be
-loaded and searched for ``funcname``:
-
-.. code-block:: python
-
-    router.add_route('/path', 'module.views:named_view')
-
+.. [#pathinfo] The path portion of a URL (the portion of the URL after the
+    domain name) is further split into two parts called ``script_name``
+    and ``path_info``.  The ``script_name`` portion of URL indicates the path
+    that is directly associated with the web application, and the
+    ``path_info`` portion is the part of the URL after it.  For a web
+    application that is associated with an entire domain, the ``script_name``
+    would be blank, and the ``path_info`` would be the entire url path.
+    It is the ``path_info`` that the ``Router`` object matches route
+    paths against.
 
 Using a Router
 --------------
@@ -187,7 +190,7 @@ with lower number priority values.
 WSGI Views
 ..........
 
-A WSGI application can be provided as a view if the `wsgi`` keyword is
+A WSGI application can be provided as a view if the ``wsgi`` keyword is
 provided to the ``Router.add_route`` method:
 
 .. code-block:: python
@@ -197,3 +200,10 @@ provided to the ``Router.add_route`` method:
         return [b'hello, world\n']
     
     router.add_route('/hello', app_view, wsgi=True)
+
+
+Further Reading
+---------------
+
+* `PEP3333 (WSGI Specification) <http://www.python.org/dev/peps/pep-3333/>`_
+* `WebOb documentation <http://webob.readthedocs.org/en/latest/>`_
