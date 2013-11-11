@@ -76,6 +76,15 @@ dictionary attached to the ``Request`` object called ``urlvars``:
 
     router.add_route('/path/{var1}/{var2}', viewfunc)
 
+Variables may also be provided via the vars keyword to
+``Router.add_route()``, which will cause them to appear in the ``urlvars``
+dictionary.  This could be useful if a view expects them but the route
+path doesn't contain them:
+
+.. code-block:: python
+
+    route.add_route('/list', viewfunc, vars={'page' : 1})
+
 Views may be given as a callable, or as a ``module:funcname``
 name, in which case a dotted notation ``module`` would be
 loaded and searched for ``funcname``:
