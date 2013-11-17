@@ -145,6 +145,14 @@ def test_wrong_slash_try_slashes():
     eq_(respRedir.status_code, 307)
     eq_(respRedir.location, "http://localhost/path/")
 
+def test_no_try_slash():
+    from simplerouter import Router
+
+    r = Router(try_slashes=True)
+    r.add_route('/path', view_factory('path'), no_alt_redir=True)
+    
+    eq_(r(Request.blank('/path/')).status_code, 404)
+
 #
 # Priority Tests
 #
