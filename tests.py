@@ -183,3 +183,36 @@ def test_default_named():
 
     r = Router(default='simplerouter:blank_view')
     eq_(r(Request.blank('/')).body, b'')
+
+#
+# Path adjustment tests
+#
+
+def test_path_info():
+    from simplerouter import Router
+
+    def view(req):
+        return req.script_name, req.path_info
+    
+    r = Router()
+    r.add_route('/test', view, path_info=True)
+    r.add_route('/slash/', view, path_info='.*') # not a good path_info
+    
+    eq_(r(Request.blank('/test/pants')), ('/test', '/pants'))
+    eq_(r(Request.blank('/slash/test')), ('/slash/', 'test'))
+    eq_(r(Request.blank('/test')).status_code, 404)
+
+def test_path_info_restore():
+    from simplerouter import Router
+
+    def nullview(req):
+        return None
+
+    def view(req):
+        return req.script_name, req.path_info
+
+    r = Router()
+    r.add_route('/test', nullview, path_info=True, priority=100)
+    r.add_route('/test/2', view)
+    
+    eq_(r(Request.blank('/test/2')), ('', '/test/2'))

@@ -20,8 +20,9 @@ def internal_error_view(msg):
 def not_found_view(request):
     return exc.HTTPNotFound()
 
+PATH_INFO_VAR = '__path_info__'
 VAR_REGEX = re.compile(r'{(\w+)(?::([^}]+))?\}')
-def template_to_regex(template):
+def template_to_regex(template, path_info):
     regex = ''
     last_pos = 0
     for match in VAR_REGEX.finditer(template):
@@ -32,6 +33,10 @@ def template_to_regex(template):
         regex += expr
         last_pos = match.end()
     regex += re.escape(template[last_pos:])
+    if path_info is not None:
+        if path_info is True:
+            path_info = '/.*'
+        regex += '(?P<%s>%s)' % (PATH_INFO_VAR, path_info)
     regex = '^%s$' % regex
     return re.compile(regex)
 
@@ -49,9 +54,9 @@ def lookup_view(fullname):
         return internal_error_view("Function %s not found on module %s"%(func_name, module_name))
 
 class Route(object):
-    def __init__(self, path_re, viewname, vars=None, wsgi=False, no_alt_redir=False, priority=0):
+    def __init__(self, path_re, viewname, vars=None, wsgi=False, no_alt_redir=False, priority=0, path_info=None):
         if path_re is not None:
-            self.path_re = template_to_regex(path_re)
+            self.path_re = template_to_regex(path_re, path_info)
         else:
             self.path_re = re.compile("")
 
@@ -80,10 +85,20 @@ class Route(object):
     def __call__(self, request):
         m = self.match(request)
         if m is not None:
-            request.urlvars = m.groupdict()
+            script_name_orig = request.script_name
+            path_info_orig = request.path_info
+
+            urlvars = m.groupdict()
+            if PATH_INFO_VAR in urlvars:
+                del urlvars[PATH_INFO_VAR]
+                begin, end = m.span(PATH_INFO_VAR)
+                request.script_name += request.path_info[:begin]
+                request.path_info = request.path_info[begin:end]
+
+            request.urlvars = urlvars
             if self.vars is not None:
                 request.urlvars.update(self.vars)
-            
+
             try:
                 view = self.view
             except AttributeError:
@@ -93,7 +108,11 @@ class Route(object):
             if self.wsgi:
                 return view
             else:
-                return view(request)
+                resp = view(request)
+                if resp is None:
+                    request.script_name = script_name_orig
+                    request.path_info = path_info_orig
+                return resp
 
 class Router(object):
     def __init__(self, default=not_found_view, try_slashes=False):
