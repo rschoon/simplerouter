@@ -115,13 +115,22 @@ class Route(object):
                 return resp
 
 class Router(object):
-    def __init__(self, default=not_found_view, try_slashes=False):
-        self.routes = []
+    def __init__(self, routes=None, default=not_found_view, try_slashes=False):
+        # Note: keep routes=None first
+
         if default is not None:
             self.default = Route(None, default)
         else:
             self.default = None
         self.try_slashes = try_slashes
+
+        self.routes = []
+        if routes is not None:
+            for route in routes:
+                if isinstance(route[-1], dict):
+                    self.add_route(*route[:-1], **route[-1])
+                else:
+                    self.add_route(*route)
 
     def add_route(self, *args, **kwargs):
         """Add a route to the router."""

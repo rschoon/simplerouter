@@ -47,6 +47,19 @@ def test_default_default():
     eq_(r(Request.blank('/')).status_code, 404)
     eq_(r(Request.blank('/path')).status_code, 404)
 
+def test_routes_arg():
+    from simplerouter import Router
+
+    r = Router([
+        ('/', view_factory('root')),
+        ('/path', view_factory('path')),
+        ('/vars', view_factory('vars'), { 'vars' : { 'key' : 'value' } })
+    ])
+
+    eq_(r(Request.blank('/')), "root")
+    eq_(r(Request.blank('/path')), "path")
+    eq_(r(Request.blank('/vars')), ('vars', {'key':'value'}))
+
 def test_wsgi():
     from simplerouter import Router
 
