@@ -9,7 +9,7 @@ with open(os.path.join(os.path.dirname(__file__), 'simplerouter.py')) as v:
 
 setup(
     name = 'simplerouter',
-    version = '1.0',
+    version = VERSION,
     description = 'A very simple WebOb based router',
     author = 'Robin Schoonover',
     author_email = 'robin@cornhooves.org',
@@ -22,6 +22,7 @@ setup(
         "Environment :: Web Environment",
         "Intended Audience :: Developers",
         "License :: OSI Approved :: MIT License",
+        "Programming Language :: Python :: 2.7",
         "Programming Language :: Python :: 3",
         "Operating System :: OS Independent",
         "Topic :: Internet :: WWW/HTTP :: WSGI",
