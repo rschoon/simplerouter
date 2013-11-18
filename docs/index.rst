@@ -15,6 +15,7 @@ app.py:
     from simplerouter import Router
 
     router = Router()
+    # view names are composed of modulename:function
     router.add_route('/post/{name}', 'views:post_view')
     router.add_route('/', 'views:index_view')
 
@@ -87,6 +88,16 @@ path doesn't contain them:
 
     route.add_route('/list', viewfunc, vars={'page' : 1})
 
+Routes can be added to a router on creation without needing additional
+``Router.add_route()`` calls:
+
+.. code-block:: python
+
+    router = Router([
+        ('/list', viewfunc, { 'vars' : {'page' : 1} }),
+        ('/list/{page:\d+}', viewfunc)
+    ])
+
 .. [#pathinfo] The path portion of a URL (the portion of the URL after the
     domain name) is further split into two parts called ``script_name``
     and ``path_info``.  The ``script_name`` portion of URL indicates the path
@@ -141,6 +152,44 @@ by providing a different view via the ``default`` keyword to the
     router = Router(default="module:error_view")
 
 
+Path Adjustment
+...............
+
+By default, the ``script_name`` and ``path_info`` of a ``Request`` are not
+adjusted when used with a view.  Normally, this wouldn't make much sense,
+as a route matches an entire url path, but this also makes it impossible
+to use a Router as a view within another Router.
+
+To facilitate this, the ``Route.add_route()`` method accepts the path_info
+keyword, which may be a regular expression (or True, which is a synonym for
+the regular expression ``/.*``). Matching requests are altered such that 
+the ``script_name`` has the route path appended to it, and the ``path_info``
+is replaced with the path_info keyword.
+
+Consider the following the example:
+
+.. code-block:: python
+
+    example_router = Router()
+    example_router.add_route('/', 'example.views:index_view')
+    example_router.add_route('/info', 'example.views:info_view')
+    example_router.add_route('/help', 'example.views:help_view')
+
+    router = Router()
+    router.add_router('/example', example_router, path_info='/.*')
+
+The following table indicates which view would be called and how the
+``script_name`` and ``path_info`` would be altered:
+
+====================== ======================== ========================= =======================
+Initial ``path_info``  View                     Resulting ``script_name`` Resulting ``path_info``
+====================== ======================== ========================= =======================
+/example/              example.views:help_view  /example                  /
+/example/info          example.views:info_view  /example                  /info
+/example/help          example.views:help_view  /example                  /help
+====================== ======================== ========================= =======================
+
+
 Trailing Slashes
 ................
 
@@ -167,7 +216,8 @@ function:
 
     router.add_route('/path', viewfunc, no_alt_redir=True)
 
-Under certain circumstances failure to handle this could result in an infinite redirect loop, which is why ``try_slashes`` is not default behavior.
+Under certain circumstances failure to handle this could result in an
+infinite redirect loop, which is why ``try_slashes`` is not default behavior.
 
 
 View Priority
@@ -200,6 +250,12 @@ provided to the ``Router.add_route`` method:
         return [b'hello, world\n']
     
     router.add_route('/hello', app_view, wsgi=True)
+
+.. Note::
+    Most WSGI Applications do their own URL processing, so the ``wsgi`` keyword
+    implies the ``path_info`` keyword as described in `Path Adjustment`_.  The
+    implicitly enabled ``path_info`` handling can be turned off by passing
+    ``path_info=False`` to ``Router.add_route()``.
 
 
 Further Reading
