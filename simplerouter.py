@@ -55,7 +55,12 @@ def lookup_view(fullname):
 
 class Route(object):
     def __init__(self, path_re, viewname, vars=None, wsgi=False, no_alt_redir=False, priority=0, path_info=None):
-        if path_re is not None:
+        if wsgi and path_info is None:
+            path_info = True
+
+        if path_re is not None or path_info is not None:
+            if path_re is None:
+                path_re = ""
             self.path_re = template_to_regex(path_re, path_info)
         else:
             self.path_re = re.compile("")
