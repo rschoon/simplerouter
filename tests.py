@@ -60,7 +60,11 @@ def test_routes_arg():
     eq_(r(Request.blank('/path')), "path")
     eq_(r(Request.blank('/vars')), ('vars', {'key':'value'}))
 
-def test_wsgi():
+#
+# WSGI Tests
+#
+
+def test_as_wsgi():
     from simplerouter import Router
 
     def call_app(app, path):
@@ -80,6 +84,28 @@ def test_wsgi():
 
     statusInvalid, headersInvalid, bodyInvalid = call_app(r.as_wsgi, '/invalid')
     assert statusInvalid.startswith('500')
+
+def test_wsgi_view():
+    from simplerouter import Router
+
+    def call_app(app, path):
+        return Request.blank(path).call_application(app)
+
+    def app(environ, start_response):
+        start_response('200 OK', [('Content-Type', 'text/plain')])
+        return [environ['PATH_INFO'].encode('utf-8')]
+
+    r = Router()
+    r.add_route('/', view_factory('root'))
+    r.add_route('/app', app, wsgi=True)
+
+    statusAppRoot, headersAppRoot, bodyAppRoot = call_app(r.as_wsgi, '/app/')
+    assert statusAppRoot.startswith('200')
+    eq_(b''.join(bodyAppRoot), b'/')
+    
+    statusAppRoot, headersAppRoot, bodyAppRoot = call_app(r.as_wsgi, '/app/sub')
+    assert statusAppRoot.startswith('200')
+    eq_(b''.join(bodyAppRoot), b'/sub')
 
 #
 # Regexes
