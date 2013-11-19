@@ -1,6 +1,6 @@
 
 from webob import Request, Response, exc
-from nose.tools import eq_
+from nose.tools import eq_, raises
 
 class view_factory(object):
     def __init__(self, payload):
@@ -59,6 +59,31 @@ def test_routes_arg():
     eq_(r(Request.blank('/')), "root")
     eq_(r(Request.blank('/path')), "path")
     eq_(r(Request.blank('/vars')), ('vars', {'key':'value'}))
+
+def test_exception():
+    from simplerouter import Router
+    from webob.exc import HTTPTemporaryRedirect
+
+    def view(req):
+        raise HTTPTemporaryRedirect(location='/home')
+
+    r = Router()
+    r.add_route('/', view)
+
+    eq_(r(Request.blank('/')).status_code, 307)
+
+@raises(Exception)
+def test_exception_nocatch():
+    from simplerouter import Router
+    from webob.exc import HTTPTemporaryRedirect
+
+    def view(req):
+        raise HTTPTemporaryRedirect(location='/home')
+
+    r = Router(catch_raised_responses=False)
+    r.add_route('/', view)
+
+    r(Request.blank('/'))
 
 #
 # WSGI Tests

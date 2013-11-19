@@ -120,7 +120,7 @@ class Route(object):
                 return resp
 
 class Router(object):
-    def __init__(self, routes=None, default=not_found_view, try_slashes=False):
+    def __init__(self, routes=None, default=not_found_view, try_slashes=False, catch_raised_responses=True):
         # Note: keep routes=None first
 
         if default is not None:
@@ -128,6 +128,7 @@ class Router(object):
         else:
             self.default = None
         self.try_slashes = try_slashes
+        self.catch_raised_responses = catch_raised_responses
 
         self.routes = []
         if routes is not None:
@@ -153,7 +154,12 @@ class Router(object):
         matches = set()
         for view in self.matches(req):
             if view is not None:
-                r = view(req)
+                try:
+                    r = view(req)
+                except exc.HTTPException as respexc:
+                    if not self.catch_raised_responses:
+                        raise
+                    return respexc
                 if r is not None:
                     return r
                 matches.add(view)
