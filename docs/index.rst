@@ -3,7 +3,7 @@ simplerouter
 ============
 
 simplerouter is an expansion of the DIY framework described in the
-WebOB documentation.
+WebOb documentation.
 
 Quick Example
 -------------
@@ -189,6 +189,19 @@ Initial ``path_info``  View                     Resulting ``script_name`` Result
 /example/help          example.views:help_view  /example                  /help
 ====================== ======================== ========================= =======================
 
+
+Raising Responses as Exceptions
+...............................
+
+In addition to being returned normally, responses can be returned to
+the router by being raised by the raise statement. While this isn't
+usually used, this can be useful in certain circumstances, such as to
+prevent certain view decorators from running normally.
+
+Only subclasses of ``webob.exc.HTTPException`` can be returned by
+being raised.  Normal ``Response`` objects do not qualify, but all
+subclasses of ``webob.exc.HTTPException`` that have been predefined
+by WebOB are also ``Response`` objects.
 
 Trailing Slashes
 ................
