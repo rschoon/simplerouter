@@ -288,3 +288,35 @@ def test_path_info_restore():
     r.add_route('/test/2', view)
     
     eq_(r(Request.blank('/test/2')), ('', '/test/2'))
+
+#
+# Nested
+#
+
+def test_nested():
+    from simplerouter import Router
+
+    r = Router([
+        ('/test', Router([
+            ('/test2', view_factory('test_test2')),
+        ]), { 'path_info' : True })
+    ])
+
+    eq_(r(Request.blank('/test/test2')), 'test_test2')
+
+def test_urlvars_restore():
+    from simplerouter import Router
+
+    def nullview(req):
+        return None
+
+    def return_first_urlvar(req):
+        return req.urlvars['first']
+
+    r = Router([
+        ('/{first}', Router([
+            ('/{second}', nullview),
+        ], default=return_first_urlvar), { 'path_info' : True }),
+    ])
+
+    eq_(r(Request.blank('/var1/var2')), 'var1')

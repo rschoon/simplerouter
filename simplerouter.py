@@ -36,8 +36,11 @@ def template_to_regex(template, path_info):
         regex.append('(?P<%s>%s)' % (PATH_INFO_VAR, path_info))
     return re.compile('^%s$' % "".join(regex))
 
-def lookup_view(fullname):
-    module_name, func_name = fullname.split(':', 1)
+def lookup_view(view):
+    if callable(view):
+        return view
+
+    module_name, func_name = view.split(':', 1)
     try:
         __import__(module_name)
     except ImportError:
@@ -88,6 +91,7 @@ class Route(object):
         if m is not None:
             script_name_orig = request.script_name
             path_info_orig = request.path_info
+            urlvars_orig = request.urlvars
 
             urlvars = m.groupdict()
             if PATH_INFO_VAR in urlvars:
@@ -113,6 +117,7 @@ class Route(object):
                 if resp is None:
                     request.script_name = script_name_orig
                     request.path_info = path_info_orig
+                    request.urlvars = urlvars_orig
                 return resp
 
 class Router(object):
@@ -120,7 +125,7 @@ class Router(object):
         # Note: keep routes=None first
 
         if default is not None:
-            self.default = Route(None, default)
+            self.default = lookup_view(default)
         else:
             self.default = None
         self.try_slashes = try_slashes
