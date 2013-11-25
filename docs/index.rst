@@ -94,10 +94,10 @@ Routes can be added to a router on creation without needing additional
 
 .. code-block:: python
 
-    router = Router([
+    router = Router(
         ('/list', viewfunc, { 'vars' : {'page' : 1} }),
         ('/list/{page:\d+}', viewfunc)
-    ])
+    )
 
 .. [#pathinfo] The path portion of a URL (the portion of the URL after the
     domain name) is further split into two parts called ``script_name``

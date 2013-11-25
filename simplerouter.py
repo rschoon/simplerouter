@@ -121,9 +121,7 @@ class Route(object):
                 return resp
 
 class Router(object):
-    def __init__(self, routes=None, default=not_found_view, try_slashes=False, catch_raised_responses=True):
-        # Note: keep routes=None first
-
+    def __init__(self, *routes, default=not_found_view, try_slashes=False, catch_raised_responses=True):
         if default is not None:
             self.default = lookup_view(default)
         else:
@@ -132,16 +130,21 @@ class Router(object):
         self.catch_raised_responses = catch_raised_responses
 
         self.routes = []
-        if routes is not None:
-            for route in routes:
-                if isinstance(route[-1], dict):
-                    self.add_route(*route[:-1], **route[-1])
-                else:
-                    self.add_route(*route)
+        for route in routes:
+            if isinstance(route[-1], dict):
+                self.add_route(*route[:-1], **route[-1])
+            else:
+                self.add_route(*route)
 
-    def add_route(self, *args, **kwargs):
+    def add_route(self, path, view, **kwargs):
         """Add a route to the router."""
-        route = Route(*args, **kwargs)
+        if isinstance(view, (list, tuple)):
+            if isinstance(view[-1], dict):
+                view = Router(*view[:-1], **view[-1])
+            else:
+                view = Router(*view)
+
+        route = Route(path, view, **kwargs)
         for i, rti in enumerate(self.routes):
             if rti.priority < route.priority:
                 self.routes.insert(i, route)

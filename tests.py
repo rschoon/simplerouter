@@ -50,11 +50,11 @@ def test_default_default():
 def test_routes_arg():
     from simplerouter import Router
 
-    r = Router([
+    r = Router(
         ('/', view_factory('root')),
         ('/path', view_factory('path')),
         ('/vars', view_factory('vars'), { 'vars' : { 'key' : 'value' } })
-    ])
+    )
 
     eq_(r(Request.blank('/')), "root")
     eq_(r(Request.blank('/path')), "path")
@@ -296,13 +296,27 @@ def test_path_info_restore():
 def test_nested():
     from simplerouter import Router
 
-    r = Router([
-        ('/test', Router([
+    r = Router(
+        ('/test', Router(
             ('/test2', view_factory('test_test2')),
-        ]), { 'path_info' : True })
-    ])
+        ), { 'path_info' : True })
+    )
 
     eq_(r(Request.blank('/test/test2')), 'test_test2')
+
+def test_nested_shorthand():
+    from simplerouter import Router
+
+    r = Router(
+        ('/test', [
+            ('/test2', view_factory('test_test2')),
+            ('/test3', view_factory('test_test3'), {'vars' : {'name' : 'value'}}),
+        ], { 'path_info' : True })
+    )
+
+    eq_(r(Request.blank('/test/test2')), 'test_test2')
+    eq_(r(Request.blank('/test/test3')), ('test_test3', {'name' : 'value'}))
+
 
 def test_urlvars_restore():
     from simplerouter import Router
@@ -313,10 +327,10 @@ def test_urlvars_restore():
     def return_first_urlvar(req):
         return req.urlvars['first']
 
-    r = Router([
-        ('/{first}', Router([
+    r = Router(
+        ('/{first}', Router(
             ('/{second}', nullview),
-        ], default=return_first_urlvar), { 'path_info' : True }),
-    ])
+        default=return_first_urlvar), { 'path_info' : True }),
+    )
 
     eq_(r(Request.blank('/var1/var2')), 'var1')
