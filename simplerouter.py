@@ -23,22 +23,18 @@ def not_found_view(request):
 PATH_INFO_VAR = '__path_info__'
 VAR_REGEX = re.compile(r'{(\w+)(?::([^}]+))?\}')
 def template_to_regex(template, path_info):
-    regex = ''
+    regex = []
     last_pos = 0
     for match in VAR_REGEX.finditer(template):
-        regex += re.escape(template[last_pos:match.start()])
-        var_name = match.group(1)
-        expr = match.group(2) or '[^/]+'
-        expr = '(?P<%s>%s)' % (var_name, expr)
-        regex += expr
+        regex.append(re.escape(template[last_pos:match.start()]))
+        regex.append('(?P<%s>%s)' % (match.group(1), match.group(2) or '[^/]+'))
         last_pos = match.end()
-    regex += re.escape(template[last_pos:])
+    regex.append(re.escape(template[last_pos:]))
     if path_info is not None:
         if path_info is True:
             path_info = '/.*'
-        regex += '(?P<%s>%s)' % (PATH_INFO_VAR, path_info)
-    regex = '^%s$' % regex
-    return re.compile(regex)
+        regex.append('(?P<%s>%s)' % (PATH_INFO_VAR, path_info))
+    return re.compile('^%s$' % "".join(regex))
 
 def lookup_view(fullname):
     module_name, func_name = fullname.split(':', 1)
