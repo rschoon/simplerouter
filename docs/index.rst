@@ -2,8 +2,9 @@
 simplerouter
 ============
 
-simplerouter is an expansion of the DIY framework described in the
-WebOb documentation.
+simplerouter is a simple WSGI/WebOb router partially based on
+the router described in `WebOB's DIY Framework Tutorial
+<http://docs.webob.org/en/latest/do-it-yourself.html>`_.
 
 Quick Example
 -------------
