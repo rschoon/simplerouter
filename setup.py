@@ -14,6 +14,7 @@ setup(
     author = 'Robin Schoonover',
     author_email = 'robin@cornhooves.org',
     url = "http://bitbucket.org/rschoon/simplerouter",
+    license = 'MIT',
     install_requires = ['WebOb>=1.2.3'],
     py_modules = ['simplerouter'],
     test_suite = 'nose.collector',
