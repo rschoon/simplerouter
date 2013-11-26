@@ -6,6 +6,9 @@ simplerouter is a simple WSGI/WebOb router partially based on
 the router described in `WebOB's DIY Framework Tutorial
 <http://docs.webob.org/en/latest/do-it-yourself.html>`_.
 
+Python 3.2 and newer is supported.  At this time Python 2 is
+*not* supported.
+
 Documentation is available at `readthedocs.org
 <http://simplerouter.readthedocs.org/en/latest/>`_.
 
