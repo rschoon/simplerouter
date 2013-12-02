@@ -19,7 +19,7 @@ Installing
 
 simplerouter uses a setup.py script in the usual fashion, like so::
 
-    $ python3.3 ./setup.py install
+    $ python ./setup.py install
 
 Alternately, simplerouter is available on pypi and can be installed
 using pip::

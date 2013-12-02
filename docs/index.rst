@@ -62,15 +62,16 @@ Route paths may contain variables, which are indicated by curly braces:
 
     router.add_route('/path/{variable}/extra', viewfunc)
 
-By default, variables will match any string not containing a forward
-slash. Alternatively, variables can match more or less restrictively
-by providing a colon and a regular expression after the variable name:
+By default, path variables will match any string not containing a forward
+slash. Normally, a variable matches any character other than a forward
+slash, but an alternate regular expression can be provided after variable
+name with a colon character:
 
 .. code-block:: python
 
     router.add_route(r'/path/{variable:\d+}', viewfunc)
 
-Any variables specified in the route path can be accessed in a
+Any path variables specified in the route path can be accessed in a
 dictionary attached to the ``Request`` object called ``urlvars``:
 
 .. code-block:: python
@@ -80,7 +81,7 @@ dictionary attached to the ``Request`` object called ``urlvars``:
 
     router.add_route('/path/{var1}/{var2}', viewfunc)
 
-Variables may also be provided via the vars keyword to
+Path variables may also be provided via the ``vars`` keyword to
 ``Router.add_route()``, which will cause them to appear in the ``urlvars``
 dictionary.  This could be useful if a view expects them but the route
 path doesn't contain them:
@@ -112,9 +113,10 @@ Routes can be added to a router on creation without needing additional
 Using a Router
 --------------
 
-Under typical circumstances, you may want to construct the ``Request``
-object from the WSGI environ yourself, and then call the ``Router``
-as a callable with the request:
+The ``Router`` object is a callable that takes WebOb's ``Request``
+object.  To use it, you would construct the ``Request`` object
+from the WSGI environ, and then call the resulting ``Response``
+object as a WSGI application:
 
 .. code-block:: python
 
@@ -128,9 +130,9 @@ as a callable with the request:
         # complete request
         return response(environ, start_response)        
 
-Alternatively, the ``Router.as_wsgi`` method may be used to do this all
-for you, so long as you don't need to do any extra processing and aren't
-using the ``Router`` object within a larger framework:
+Alternatively, the ``Router.as_wsgi`` method may be used to do this
+automatically, so long as you don't need to do any extra processing
+and aren't using the ``Router`` object within a larger framework:
 
 .. code-block:: python
 
@@ -143,7 +145,7 @@ Advanced Options
 Default View
 ............
 
-By default, a ``Router`` will return WebOb's HTTPNotFound error response if
+By default, a ``Router`` will return WebOb's ``HTTPNotFound`` error response if
 no view manages to return a valid response.  This behavior can be changed
 by providing a different view via the ``default`` keyword to the
 ``Router`` initializer.
