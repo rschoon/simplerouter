@@ -121,13 +121,8 @@ class Route(object):
                 return resp
 
 class Router(object):
-    def __init__(self, *routes, default=not_found_view, try_slashes=False, catch_raised_responses=True):
-        if default is not None:
-            self.default = lookup_view(default)
-        else:
-            self.default = None
-        self.try_slashes = try_slashes
-        self.catch_raised_responses = catch_raised_responses
+    def __init__(self, *routes, **options):
+        self._set_options(**options)
 
         self.routes = []
         for route in routes:
@@ -135,6 +130,14 @@ class Router(object):
                 self.add_route(*route[:-1], **route[-1])
             else:
                 self.add_route(*route)
+
+    def _set_options(self, default=not_found_view, try_slashes=False, catch_raised_responses=True):
+        if default is not None:
+            self.default = lookup_view(default)
+        else:
+            self.default = None
+        self.try_slashes = try_slashes
+        self.catch_raised_responses = catch_raised_responses
 
     def add_route(self, path, view, **kwargs):
         """Add a route to the router."""
