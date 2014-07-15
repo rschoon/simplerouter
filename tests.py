@@ -40,6 +40,24 @@ def test_simple_paths():
     eq_(r(Request.blank('/path/')), "path_slash")
     eq_(r(Request.blank('/path/pie')) , ("path_var", {'element' : 'pie'}))
 
+def test_method():
+    from simplerouter import Router
+
+    r = Router()
+    r.add_route('/', view_factory('root'))
+    r.add_route('/path_str', view_factory('get'), method="GET")
+    r.add_route('/path_str', view_factory('post'), method="POST")
+    r.add_route('/path_str', view_factory('head'), method="HEAD")
+    r.add_route('/path_str', view_factory('else'))
+    r.add_route('/path_list', view_factory('get-post'), method=("GET", "POST"))
+
+    eq_(r(Request.blank('/', POST={})), "root")
+    eq_(r(Request.blank('/path_str')), "get")
+    eq_(r(Request.blank('/path_str', POST={})), "post")
+    eq_(r(Request.blank('/path_list')), "get-post")
+    eq_(r(Request.blank('/path_list', POST={})), "get-post")
+    eq_(r(Request.blank('/path_list', method="HEAD")), "get-post")
+
 def test_default_default():
     from simplerouter import Router
 

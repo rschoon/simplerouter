@@ -53,7 +53,7 @@ def lookup_view(view):
         return internal_error_view("Function %s not found on module %s"%(func_name, module_name))
 
 class Route(object):
-    def __init__(self, path_re, viewname, vars=None, wsgi=False, no_alt_redir=False, priority=0, path_info=None):
+    def __init__(self, path_re, viewname, vars=None, wsgi=False, no_alt_redir=False, priority=0, path_info=None, method=None):
         if wsgi and path_info is None:
             path_info = True
 
@@ -78,12 +78,26 @@ class Route(object):
         self.no_alt_redir = no_alt_redir
         self.priority = priority
 
+        if isinstance(method, str):
+            self.method = (method, )
+        else:
+            self.method = method
+        if self.method is not None and "GET" in self.method:
+            self.method = list(self.method) + ["HEAD"]
+
     def __repr__(self):
-        return "<Route(%s @ %s)>"%(self.viewname, self.path_re.pattern)
+        if self.method is None:
+            method = ""
+        else:
+            method = "|".join(self.method)
+
+        return "<Route(%s%s @ %s)>"%(method, self.viewname, self.path_re.pattern)
 
     def match(self, request, alt=False):
         if alt and self.no_alt_redir:
-            return False          
+            return False
+        if self.method is not None and request.method not in self.method:
+            return False
         return self.path_re.match(request.path_info)
 
     def __call__(self, request):
