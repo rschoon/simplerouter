@@ -22,19 +22,29 @@ def not_found_view(request):
 
 PATH_INFO_VAR = '__path_info__'
 VAR_REGEX = re.compile(r'{(\w+)(?::([^}]+))?\}')
-def template_to_regex(template, path_info):
+def parse_template(template, path_info):
+    fmt = []
     regex = []
     last_pos = 0
+
     for match in VAR_REGEX.finditer(template):
         regex.append(re.escape(template[last_pos:match.start()]))
+        fmt.append(template[last_pos:match.start()])
+
         regex.append('(?P<%s>%s)' % (match.group(1), match.group(2) or '[^/]+'))
+        fmt.append('{%s}'%(match.group(1), ))
+
         last_pos = match.end()
+
     regex.append(re.escape(template[last_pos:]))
+    fmt.append(template[last_pos:])
+
     if path_info is not None:
         if path_info is True:
             path_info = '/.*'
         regex.append('(?P<%s>%s)' % (PATH_INFO_VAR, path_info))
-    return re.compile('^%s$' % "".join(regex))
+
+    return re.compile('^%s$' % "".join(regex)), "".join(fmt)
 
 def lookup_view(view):
     if callable(view):
@@ -60,16 +70,17 @@ class Route(object):
         if path_re is not None or path_info is not None:
             if path_re is None:
                 path_re = ""
-            self.path_re = template_to_regex(path_re, path_info)
+            self.path_re, self.path_fmt = parse_template(path_re, path_info)
         else:
+            self.path_fmt = None
             self.path_re = re.compile("")
 
         if callable(viewname):
-            self.view = viewname
-            if hasattr(self.view, "__name__"):
-                self.viewname = self.view.__name__
-            elif hasattr(self.view, "__class__"):
-                self.viewname = self.view.__class__.__name__
+            self._view = viewname
+            if hasattr(self._view, "__name__"):
+                self.viewname = self._view.__name__
+            elif hasattr(self._view, "__class__"):
+                self.viewname = self._view.__class__.__name__
         else:
             self.viewname = viewname
 
@@ -100,6 +111,16 @@ class Route(object):
             return False
         return self.path_re.match(request.path_info)
 
+    @property
+    def view(self):
+        try:
+            return self._view
+        except AttributeError:
+            pass
+        view = lookup_view(self.viewname)
+        self._view = view
+        return view
+
     def __call__(self, request):
         m = self.match(request)
         if m is not None:
@@ -118,16 +139,10 @@ class Route(object):
             if self.vars is not None:
                 request.urlvars.update(self.vars)
 
-            try:
-                view = self.view
-            except AttributeError:
-                view = lookup_view(self.viewname)
-                self.view = view
-            
             if self.wsgi:
-                return view
+                return self.view
             else:
-                resp = view(request)
+                resp = self.view(request)
                 if resp is None:
                     request.script_name = script_name_orig
                     request.path_info = path_info_orig
@@ -213,6 +228,32 @@ class Router(object):
                     yield m
                 else:
                     yield route
+
+    def _find_route_by_identifier(self, route):
+        """Find a route by its name or callable or itself."""
+        if isinstance(route, Route):
+            return route
+        elif isinstance(route, str):
+            for r in self.routes:
+                if r.viewname == route:
+                    return r
+        elif callable(route):
+            for r in self.routes:
+                if r.view == route:
+                    return r
+        else:
+            raise TypeError("Expected a string or route callable, but got `%s' instead", type(route).__name__)
+        raise ValueError("No such route %r"%(route, ))
+
+    def reverse(self, route, vars={}, path_info=None):
+        route = self._find_route_by_identifier(route)
+        if route.path_fmt is None:
+            raise ValueError("%r cannot be reversed"%(route, ))
+
+        url = route.path_fmt.format(**vars)
+        if path_info is not None:
+            url += path_info
+        return url
 
     def as_wsgi(self, environ, start_response):
         """Invoke router as an wsgi application."""

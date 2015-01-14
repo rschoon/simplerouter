@@ -352,3 +352,29 @@ def test_urlvars_restore():
     )
 
     eq_(r(Request.blank('/var1/var2')), 'var1')
+
+#
+# reverse
+#
+
+def test_reverse():
+    from simplerouter import Router
+
+    root_view = view_factory('root')
+    path_view = view_factory('path')
+    path_slash_view = view_factory('path_slash')
+    path_var_view = view_factory('path_var')
+    path_info_view = view_factory('path_info')
+
+    r = Router()
+    r.add_route('/', root_view)
+    r.add_route('/path', path_view)
+    r.add_route('/path/', path_slash_view)
+    r.add_route('/path/{element}', path_var_view)
+    r.add_route('/pi/{a}', path_info_view, path_info=True)
+
+    eq_(r.reverse(root_view), '/')
+    eq_(r.reverse(path_view), '/path')
+    eq_(r.reverse(path_slash_view), '/path/')
+    eq_(r.reverse(path_var_view, {'element' : 'pie'}), '/path/pie')
+    eq_(r.reverse(path_info_view, {'a' : 'apple'}, '/and/banana'), '/pi/apple/and/banana')
