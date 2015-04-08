@@ -186,6 +186,13 @@ class Router(object):
         
     def __call__(self, req):
         """Invoke router as a view."""
+
+        # verify url was decoded properly
+        try:
+            req.path_info, req.script_name
+        except UnicodeDecodeError:
+            return exc.HTTPBadRequest()
+
         # try normal view
         matches = set()
         for view in self.matches(req):
