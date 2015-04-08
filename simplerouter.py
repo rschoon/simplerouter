@@ -190,7 +190,7 @@ class Router(object):
         # verify url was decoded properly
         try:
             req.path_info, req.script_name
-        except UnicodeDecodeError:
+        except (UnicodeDecodeError, UnicodeEncodeError):
             return exc.HTTPBadRequest()
 
         # try normal view

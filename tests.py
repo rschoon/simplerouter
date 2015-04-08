@@ -103,6 +103,17 @@ def test_exception_nocatch():
 
     r(Request.blank('/'))
 
+def test_bad_url():
+    from simplerouter import Router
+    from webob.exc import HTTPBadRequest
+
+    r = Router()
+    r.add_route('/', view_factory('root'))
+
+    req = Request.blank('/')
+    req.environ['PATH_INFO'] = b'/\xef'.decode('latin-1')
+    eq_(r(req).status_code, 400)
+
 #
 # WSGI Tests
 #
