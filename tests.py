@@ -303,6 +303,19 @@ def test_path_info():
     eq_(r(Request.blank('/slash/test')), ('/slash/', 'test'))
     eq_(r(Request.blank('/test')).status_code, 404)
 
+def test_path_info_none():
+    from simplerouter import Router
+
+    def view(req):
+        return req.script_name, req.path_info
+
+    r = Router()
+    r.add_route('/test', view, path_info=True)
+    r.add_route(None, view, path_info=True)
+
+    eq_(r(Request.blank('/test/pants')), ('/test', '/pants'))
+    eq_(r(Request.blank('/test')), ('', '/test'))
+
 def test_path_info_restore():
     from simplerouter import Router
 
@@ -346,6 +359,18 @@ def test_nested_shorthand():
     eq_(r(Request.blank('/test/test2')), 'test_test2')
     eq_(r(Request.blank('/test/test3')), ('test_test3', {'name' : 'value'}))
 
+def test_nested_shorthand_opt():
+    from simplerouter import Router
+
+    r = Router(
+        ('/test', [
+            ('/test2', view_factory('test_test2')),
+            { 'default' : view_factory('default') }
+        ], { 'path_info' : True })
+    )
+
+    eq_(r(Request.blank('/test/test2')), 'test_test2')
+    eq_(r(Request.blank('/test/doesnotexist')), 'default')
 
 def test_urlvars_restore():
     from simplerouter import Router
@@ -383,9 +408,35 @@ def test_reverse():
     r.add_route('/path/', path_slash_view)
     r.add_route('/path/{element}', path_var_view)
     r.add_route('/pi/{a}', path_info_view, path_info=True)
+    r.add_route('/blank', 'simplerouter:blank_view')
 
     eq_(r.reverse(root_view), '/')
     eq_(r.reverse(path_view), '/path')
     eq_(r.reverse(path_slash_view), '/path/')
     eq_(r.reverse(path_var_view, {'element' : 'pie'}), '/path/pie')
     eq_(r.reverse(path_info_view, {'a' : 'apple'}, '/and/banana'), '/pi/apple/and/banana')
+    eq_(r.reverse('simplerouter:blank_view'), '/blank')
+
+@raises(ValueError)
+def test_reverse_fail():
+    from simplerouter import Router
+
+    r = Router()
+    r.add_route('/blank', 'simplerouter:blank_view')
+
+    r.reverse('/doesnotexist')
+
+@raises(TypeError)
+def test_reverse_fail_type():
+    from simplerouter import Router
+
+    r = Router()
+    r.reverse(object())
+
+@raises(ValueError)
+def test_reverse_fail_impossible():
+    from simplerouter import Router
+
+    r = Router()
+    r.add_route(None, 'simplerouter:blank_view')
+    r.reverse('simplerouter:blank_view')
