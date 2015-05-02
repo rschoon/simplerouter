@@ -154,6 +154,15 @@ by providing a different view via the ``default`` keyword to the
 
     router = Router(default="module:error_view")
 
+Limiting by HTTP Method
+.......................
+
+By default, view matching is not restricted by the HTTP method.  The
+``method`` keyword allows a view to be limited to specific HTTP methods,
+as either a single string, or a collection of strings.
+
+.. Note::
+    Views matching the GET method always also match the HEAD method.
 
 Path Adjustment
 ...............

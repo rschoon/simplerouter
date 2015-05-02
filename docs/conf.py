@@ -11,5 +11,5 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 project = 'simplerouter'
-copyright = '2013, Robin Schoonover'
+copyright = '2013-2015, Robin Schoonover'
 release = version
