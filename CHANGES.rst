@@ -2,7 +2,7 @@
 Change Log
 ==========
 
-1.2 (TBD)
+1.2 (May 2 2015)
 ---------
 
 * Add ``Router.reverse`` method for constructing URLs from view parameters.
