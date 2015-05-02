@@ -6,6 +6,17 @@ simplerouter is a simple WSGI/WebOb router partially based on
 the router described in `WebOB's DIY Framework Tutorial
 <http://docs.webob.org/en/latest/do-it-yourself.html>`_.
 
+Contents
+--------
+
+ * :ref:`quick-example`
+ * :ref:`adding-routes`
+ * :ref:`using-a-router`
+ * :ref:`advanced-options`
+ * :doc:`changelog`
+
+.. _quick-example:
+
 Quick Example
 -------------
 
@@ -40,6 +51,7 @@ views.py:
     def index_view(request):
         return Response("Site index")
 
+.. _adding-routes:
 
 Adding Routes
 -------------
@@ -110,6 +122,8 @@ Routes can be added to a router on creation without needing additional
     It is the ``path_info`` that the ``Router`` object matches route
     paths against.
 
+.. _using-a-router:
+
 Using a Router
 --------------
 
@@ -138,6 +152,7 @@ and aren't using the ``Router`` object within a larger framework:
 
     application = router.as_wsgi
 
+.. _advanced-options:
 
 Advanced Options
 ----------------
