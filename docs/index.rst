@@ -215,6 +215,28 @@ being raised.  Normal ``Response`` objects do not qualify, but all
 subclasses of ``webob.exc.HTTPException`` that have been predefined
 by WebOB are also ``Response`` objects.
 
+Reversing paths
+...............
+
+The ``Route.reverse`` method allows a path to be reversed when given
+the view name or the view function. If the view accepts any parameters,
+they can be provided to construct the URL with them.
+
+For example:
+
+.. code-block:: python
+
+    router = Router()
+    router.add_route('/', 'example.views:index_view')
+    router.add_route('/help', 'example.views:help_view')
+    router.add_route('/get/{name}', 'example.views:get_view')
+
+    print(router.reverse('example.views:help_view'))
+    # "/help"
+
+    print(router.reverse('example.views:get_view', {'name' : 'duck'}))
+    # "/get/duck"
+
 Trailing Slashes
 ................
 
